@@ -166,7 +166,6 @@ function updateDifficultyBasedOnScore() {
 }
 
 function checkRowComplete() {
-    let linesClearedNow = 0;
   
     for (let row = rows - 1; row >= 0; row--) {
         let isRowFull = true;
@@ -188,17 +187,8 @@ function checkRowComplete() {
                 board[0][col] = 0;
             }
 
-            linesCleared++;
-            row++;
+            score += 1000;
         }
-      return;
-    }
-  
-    if (linesCleared >= 1) {
-        score += linesClearedNow * 10;
-        linesCleared += linesClearedNow;
-        updateDifficultyBasedOnScore();
-        linesClearedNow = 0;
     }
 }
 
@@ -216,7 +206,7 @@ class Piece {
         this.color = [random(255), random(255), random(255)];
         this.shape = random(this.shapes);
         this.x = floor(cols / 2) - 1;
-        this.y = -2;
+        this.y = -2;''
         this.rotationIndex = 0;
     }
 
