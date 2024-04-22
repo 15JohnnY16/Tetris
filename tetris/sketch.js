@@ -4,6 +4,7 @@ let board = [];
 let blockSize = 30;
 let currentPiece;
 let loopSpeed = 30;
+let currentLoopSpeed = 30;
 let nextPiece;
 let level = 1;
 let gamePaused = false;
@@ -133,7 +134,7 @@ function keyPressed() {
 
 function keyReleased() {
     if (keyCode === DOWN_ARROW) {
-        loopSpeed = 30; // Restaura a velocidade de queda
+        // loopSpeed = 30 + score *0.2; // Restaura a velocidade de queda
     }
 }
 
@@ -151,17 +152,26 @@ function drawBoard() {
     }
 }
 
+function queueSpeed() {
+    this.elements = [loopSpeed];
+}
+
 function updateDifficultyBasedOnScore() {
     if (score >= 500 && loopSpeed > 20) {
-        loopSpeed = 25;
+        loopSpeed = currentLoopSpeed;
+        currentLoopSpeed = 25;
     } else if (score >= 1000 && loopSpeed > 15) {
-        loopSpeed = 20;
+        loopSpeed = currentLoopSpeed;
+        currentLoopSpeed = 20;
     } else if (score >= 1500 && loopSpeed > 10) {
-        loopSpeed = 15;
+        loopSpeed = currentLoopSpeed;
+        currentLoopSpeed = 15;
     } else if (score >= 2000 && loopSpeed > 5) {
-        loopSpeed = 10;
+        loopSpeed = currentLoopSpeed;
+        currentLoopSpeed = 10;
     } else if (score >= 2500 && loopSpeed > 1) {
-        loopSpeed = 5;
+        loopSpeed = currentLoopSpeed;
+        currentLoopSpeed = 5;
     }
 }
 
@@ -188,9 +198,12 @@ function checkRowComplete() {
             }
 
             score += 1000;
+            updateDifficultyBasedOnScore();
         }
     }
 }
+
+
 
 class Piece {
     constructor() {
