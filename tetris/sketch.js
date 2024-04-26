@@ -4,7 +4,8 @@ let board = [];
 let blockSize = 30;
 let currentPiece;
 let loopSpeed = 30;
-let currentLoopSpeed = 30;
+let currentLoopSpeed;
+let speedQueue = new Queue();
 let nextPiece;
 let level = 1;
 let gamePaused = false;
@@ -17,6 +18,7 @@ let linesCleared = 0;
 function setup() {
     createCanvas(min(cols * blockSize + 250, windowWidth), min(rows * blockSize, windowHeight));
     frameRate(60);
+    setupSpeedQueue();
     for (let r = 0; r < rows; r++) {
         board[r] = [];
         for (let c = 0; c < cols; c++) {
@@ -134,7 +136,7 @@ function keyPressed() {
 
 function keyReleased() {
     if (keyCode === DOWN_ARROW) {
-        // loopSpeed = 30 + score *0.2; // Restaura a velocidade de queda
+        loopSpeed = currentLoopSpeed;
     }
 }
 
@@ -152,26 +154,46 @@ function drawBoard() {
     }
 }
 
-function queueSpeed() {
-    this.elements = [loopSpeed];
+class Queue {
+    constructor() {
+        this.elements = [];
+    }
+
+    enqueue(element) {
+        this.elements.push(element);
+    }
+
+    dequeue() {
+        return this.elements.shift();
+    }
+
+    isEmpty() {
+        return this.elements.length === 0;
+    }
+
+    peek() {
+        return !this.isEmpty() ? this.elements[0] : undefined;
+    }
+}
+
+function setupSpeedQueue() {
+    speedQueue.enqueue(30);
+    speedQueue.enqueue(25);
+    speedQueue.enqueue(20);
+    speedQueue.enqueue(15);
+    speedQueue.enqueue(10);
+    speedQueue.enqueue(5);
 }
 
 function updateDifficultyBasedOnScore() {
-    if (score >= 500 && loopSpeed > 20) {
-        loopSpeed = currentLoopSpeed;
-        currentLoopSpeed = 25;
-    } else if (score >= 1000 && loopSpeed > 15) {
-        loopSpeed = currentLoopSpeed;
-        currentLoopSpeed = 20;
-    } else if (score >= 1500 && loopSpeed > 10) {
-        loopSpeed = currentLoopSpeed;
-        currentLoopSpeed = 15;
-    } else if (score >= 2000 && loopSpeed > 5) {
-        loopSpeed = currentLoopSpeed;
-        currentLoopSpeed = 10;
-    } else if (score >= 2500 && loopSpeed > 1) {
-        loopSpeed = currentLoopSpeed;
-        currentLoopSpeed = 5;
+    if ((score >= 500 && currentLoopSpeed > 25) ||
+        (score >= 1000 && currentLoopSpeed > 20) ||
+        (score >= 1500 && currentLoopSpeed > 15) ||
+        (score >= 2000 && currentLoopSpeed > 10) ||
+        (score >= 2500 && currentLoopSpeed > 5)) {
+        if (!speedQueue.isEmpty()) {
+            currentLoopSpeed = speedQueue.dequeue();
+        }
     }
 }
 
