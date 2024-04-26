@@ -4,7 +4,7 @@ let board = [];
 let blockSize = 30;
 let currentPiece;
 let loopSpeed = 30;
-let currentLoopSpeed;
+let currentLoopSpeed = 30;
 let speedQueue = new Queue();
 let nextPiece;
 let level = 1;
