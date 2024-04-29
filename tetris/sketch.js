@@ -5,7 +5,7 @@ let blockSize = 30;
 let currentPiece;
 let loopSpeed = 30;
 let currentLoopSpeed = 30;
-let speedQueue = new Queue();
+let fasterLoopSpeed = 5;
 let nextPiece;
 let level = 1;
 let gamePaused = false;
@@ -13,12 +13,10 @@ let gameOver = false;
 let heldPiece = null;
 let canHold = true;
 let score = 0;
-let linesCleared = 0;
 
 function setup() {
     createCanvas(min(cols * blockSize + 250, windowWidth), min(rows * blockSize, windowHeight));
     frameRate(60);
-    setupSpeedQueue();
     for (let r = 0; r < rows; r++) {
         board[r] = [];
         for (let c = 0; c < cols; c++) {
@@ -71,30 +69,27 @@ function drawHeldPiece() {
 }
 
 function draw() {
-  if (gamePaused || gameOver) {
-    if (gameOver) {
-      fill(0);
-      textSize(32);
-      text('Game Over', width / 2 - 75, height / 2);
-      if (gameOver) {
-      noLoop();
-}
+    if (gamePaused || gameOver) {
+        if (gameOver) {
+            fill(0);
+            textSize(32);
+            text('Game Over', width / 2 - 75, height / 2);
+            noLoop();
+        }
+        if (gamePaused) {
+            fill(0);
+            textSize(32);
+            text('Pause', width / 2 - 50, height / 2);
+        }
+        return;
     }
-    if (gamePaused) {
-      fill(0);
-      textSize(32);
-      text('Pause', width / 2 - 50, height / 2);
-      
-    }
-    return;
-  }
     background(255);
     fill(0);
     textSize(16);
     textAlign(LEFT, TOP);
     let scoreColumnWidth = 200
     let scoreX = 10
-    text('Pontuação:', cols / blockSize + 10, 10);
+    text('Score:', cols / blockSize + 10, 10);
     text(score, scoreX, 30)
     translate(100, 0);
     drawBoard();
@@ -106,16 +101,15 @@ function draw() {
 
 function holdPiece() {
     if (!canHold) return;
-
     if (heldPiece === null) {
         heldPiece = currentPiece;
         currentPiece = new Piece();
     } else {
-      [currentPiece, heldPiece] = [heldPiece, currentPiece];
-      currentPiece.x = floor(cols / 2) - 1;
-      currentPiece.y = 0;
+        [currentPiece, heldPiece] = [heldPiece, currentPiece];
+        currentPiece.x = floor(cols / 2) - 1;
+        currentPiece.y = 0;
     }
-   canHold = false;
+    canHold = false;
 }
 
 function keyPressed() {
@@ -126,7 +120,7 @@ function keyPressed() {
     } else if (keyCode === UP_ARROW) {
         currentPiece.rotate();
     } else if (keyCode === DOWN_ARROW) {
-        loopSpeed = 5; // Aumenta a velocidade de queda
+        loopSpeed = fasterLoopSpeed; // Aumenta a velocidade de queda
     } else if (key === "p" || key === "P"){ // 'P' para pausar
         gamePaused = !gamePaused;
     } else if (key === "c" || key === "C"){
@@ -136,7 +130,7 @@ function keyPressed() {
 
 function keyReleased() {
     if (keyCode === DOWN_ARROW) {
-        loopSpeed = currentLoopSpeed;
+        loopSpeed = currentLoopSpeed; // Restaura a velocidade de queda
     }
 }
 
@@ -154,28 +148,6 @@ function drawBoard() {
     }
 }
 
-class Queue {
-    constructor() {
-        this.elements = [];
-    }
-
-    enqueue(element) {
-        this.elements.push(element);
-    }
-
-    dequeue() {
-        return this.elements.shift();
-    }
-
-    isEmpty() {
-        return this.elements.length === 0;
-    }
-
-    peek() {
-        return !this.isEmpty() ? this.elements[0] : undefined;
-    }
-}
-
 function setupSpeedQueue() {
     speedQueue.enqueue(30);
     speedQueue.enqueue(25);
@@ -186,46 +158,66 @@ function setupSpeedQueue() {
 }
 
 function updateDifficultyBasedOnScore() {
-    if ((score >= 500 && currentLoopSpeed > 25) ||
-        (score >= 1000 && currentLoopSpeed > 20) ||
-        (score >= 1500 && currentLoopSpeed > 15) ||
-        (score >= 2000 && currentLoopSpeed > 10) ||
-        (score >= 2500 && currentLoopSpeed > 5)) {
-        if (!speedQueue.isEmpty()) {
-            currentLoopSpeed = speedQueue.dequeue();
-        }
+    if (score >= 500 && currentLoopSpeed > 25) {
+        currentLoopSpeed = 25;
+    } else if (score >= 1000 && currentLoopSpeed > 20) {
+        currentLoopSpeed = 20;
+    } else if (score >= 1500 && currentLoopSpeed > 15) {
+        currentLoopSpeed = 15;
+    } else if (score >= 2000 && currentLoopSpeed > 10) {
+        currentLoopSpeed = 10;
+    } else if (score >= 2500 && currentLoopSpeed > 5) {
+        currentLoopSpeed = 5;
     }
+    loopSpeed = currentLoopSpeed;
 }
 
 function checkRowComplete() {
-  
-    for (let row = rows - 1; row >= 0; row--) {
+    for(let row = rows-1; row >= 0; row--) {
         let isRowFull = true;
-
-        for (let col = 0; col < cols; col++) {
+        for(let col = 0; col < cols; col++) {
+            // console.log(`board[${row}][${col}] = ${board[row][col]}`)
             if (board[row][col] === 0) {
                 isRowFull = false;
                 break;
             }
         }
-         if (isRowFull) {
-            for (let y = row; y > 0; y--) {
-                for (let col = 0; col < cols; col++) {
-                    board[y][col] = board[y - 1][col];
+        if(isRowFull) {
+            console.log(row);
+            for(let row2 = row; row2 > 0; row2--) {
+                for(let col = 0; col < cols; col++) {
+                    console.log(`board[${row2}][${col}] (${board[row2][col]}) = board[${row2-1}][${col}] (${board[row2-1][col]})`)
+                    board[row2][col] = board[row2-1][col];
+                    
                 }
             }
-
-            for (let col = 0; col < cols; col++) {
-                board[0][col] = 0;
-            }
-
-            score += 1000;
+            score += 250;
             updateDifficultyBasedOnScore();
         }
     }
+
+    // for (let row = rows - 1; row >= 0; row--) {
+    //     let isRowFull = true;
+    //     for (let col = 0; col < cols; col++) {
+    //         if (board[row][col] === 0) {
+    //             isRowFull = false;
+    //             break;
+    //         }
+    //     }
+    //     if (isRowFull) {
+    //         for (let y = row - 1; y > 0; y--) {
+    //             for (let col = 0; col < cols; col++) {
+    //                 board[y][col] = board[y - 1][col];
+    //             }
+    //         }
+    //         for (let col = 0; col < cols; col++) {
+    //             board[0][col] = 0;
+    //         }
+    //         score += 250;
+    //         updateDifficultyBasedOnScore();
+    //     }
+    // }
 }
-
-
 
 class Piece {
     constructor() {
@@ -238,13 +230,12 @@ class Piece {
             [[1, 1, 0], [0, 1, 1]], // S
             [[0, 1, 1], [1, 1, 0]]  // Z
         ];
-        this.color = [random(255), random(255), random(255)];
+        this.color = [random(255), random(200), random(255)];
         this.shape = random(this.shapes);
         this.x = floor(cols / 2) - 1;
         this.y = -2;''
         this.rotationIndex = 0;
     }
-
     show() {
         stroke(200);
         strokeWeight(1);
@@ -257,7 +248,6 @@ class Piece {
             }
         }
     }
-
     update() {
         if (frameCount % loopSpeed === 0) {
             if (!this.collide(0, 1)) {
@@ -270,13 +260,11 @@ class Piece {
             }
         }
     }
-
     move(dir) {
         if (!this.collide(dir, 0)) {
             this.x += dir;
         }
     }
-
     rotate() {
         let newShape = [];
         for (let i = 0; i < this.shape[0].length; i++) {
@@ -291,7 +279,6 @@ class Piece {
             this.shape = newShape;
         }
     }
-
     collide(dx, dy, futureShape) {
         let shape = futureShape || this.shape;
         for (let i = 0; i < shape.length; i++) {
