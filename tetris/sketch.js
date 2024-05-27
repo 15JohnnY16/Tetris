@@ -317,3 +317,12 @@ class Piece {
         }
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const tetrisGrid = document.querySelector('.tetris-grid');
+    for (let i = 0; i < 200; i++) { // 10 columns * 20 rows = 200 cells
+        const cell = document.createElement('div');
+        cell.classList.add('tetris-cell');
+        tetrisGrid.appendChild(cell);
+    }
+});
