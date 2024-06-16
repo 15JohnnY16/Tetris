@@ -9,8 +9,25 @@
 </head>
 <body>
     <div class="container">
-        <div class="tetris-grid" id="tetris-grid"></div>
-        <div id="color-queue" class="color-queue"></div>
+        <div id="canvas-container"></div>
+        <div id="info-container">
+            <div class="info-box" id="next-piece">
+                <h3>Next Piece</h3>
+                <div id="next-piece-display"></div>
+            </div>
+            <div class="info-box" id="held-piece">
+                <h3>Held Piece</h3>
+                <div id="held-piece-display"></div>
+            </div>
+            <div class="info-box" id="score">
+                <h3>Score</h3>
+                <p id="score-display">0</p>
+            </div>
+            <div class="info-box" id="status">
+                <h3>Status</h3>
+                <p id="status-display">Playing</p>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
