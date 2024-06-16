@@ -10,14 +10,53 @@ body, html {
 .container {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     height: 100%;
+}
+
+#canvas-container {
+    margin-right: 20px;
+}
+
+#info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.info-box {
+    width: 200px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #fff;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+}
+
+.info-box h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+}
+
+#next-piece-display, #held-piece-display {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 10px auto;
+    background-color: #555;
+}
+
+#score-display, #status-display {
+    font-size: 24px;
+    margin: 10px 0;
 }
 
 .color-queue {
     display: flex;
-    margin-bottom: 20px;
-    
+    flex-direction: column;
+    margin-left: 10px;
 }
 
 .color-box {
@@ -36,6 +75,7 @@ body, html {
     background-color: #000;
     border: 5px solid #fff;
 }
+
 .tetris-cell {
     width: 100%;
     height: 100%;
