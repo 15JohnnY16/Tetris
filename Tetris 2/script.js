@@ -17,7 +17,8 @@ const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'cyan'];
 let colorQueue = [...colors];
 
 function setup() {
-    createCanvas(min(cols * blockSize + 250, windowWidth), min(rows * blockSize, windowHeight));
+    let canvas = createCanvas(min(cols * blockSize + 250, windowWidth), min(rows * blockSize, windowHeight));
+    canvas.parent('canvas-container');
     frameRate(60);
     for (let r = 0; r < rows; r++) {
         board[r] = [];
@@ -36,67 +37,88 @@ function rotateColorQueue() {
 }
 
 function drawNextPiece() {
-    fill(0);
-    stroke(0);
-    textSize(16);
-    text("Próxima Peça:", cols * blockSize + 15, 10);
+    let nextPieceDisplay = document.getElementById('next-piece-display');
+    nextPieceDisplay.innerHTML = '';
     
-    let xOffset = cols * blockSize + 15;
-    let yOffset = 30;
+    let xOffset = 0;
+    let yOffset = 0;
     for (let i = 0; i < nextPiece.shape.length; i++) {
         for (let j = 0; j < nextPiece.shape[i].length; j++) {
             if (nextPiece.shape[i][j] === 1) {
-                fill(nextPiece.color);
-                stroke(0);
-                rect(xOffset + j * blockSize, yOffset + i * blockSize, blockSize, blockSize);
+                let cell = document.createElement('div');
+                cell.style.width = cell.style.height = blockSize + 'px';
+                cell.style.backgroundColor = nextPiece.color;
+                cell.style.position = 'absolute';
+                cell.style.left = (xOffset + j * blockSize) + 'px';
+                cell.style.top = (yOffset + i * blockSize) + 'px';
+                nextPieceDisplay.appendChild(cell);
             }
         }
     }
 }
 
 function drawHeldPiece() {
+    let heldPieceDisplay = document.getElementById('held-piece-display');
+    heldPieceDisplay.innerHTML = '';
+    
     if (heldPiece !== null) {
-        fill(0);
-        stroke(0);
-        textSize(16);
-        text("Peça Guardada:", cols * blockSize + 15, 105);
-      
-        let xOffset = cols * blockSize + 15;
-        let yOffset = 125;
+        let xOffset = 0;
+        let yOffset = 0;
         for (let i = 0; i < heldPiece.shape.length; i++) {
             for (let j = 0; j < heldPiece.shape[i].length; j++) {
                 if (heldPiece.shape[i][j] === 1) {
-                    fill(heldPiece.color);
-                    stroke(0);
-                    rect(xOffset + j * blockSize, yOffset + i * blockSize, blockSize, blockSize);
+                    let cell = document.createElement('div');
+                    cell.style.width = cell.style.height = blockSize + 'px';
+                    cell.style.backgroundColor = heldPiece.color;
+                    cell.style.position = 'absolute';
+                    cell.style.left = (xOffset + j * blockSize) + 'px';
+                    cell.style.top = (yOffset + i * blockSize) + 'px';
+                    heldPieceDisplay.appendChild(cell);
                 }
             }
         }
     }
 }
 
+function drawScore() {
+    document.getElementById('score-display').innerText = score;
+}
+
+function drawPause() {
+    document.getElementById('status-display').innerText = gamePaused ? 'Paused' : 'Playing';
+}
+
+function drawGameOver() {
+    if (gameOver) {
+        document.getElementById('status-display').innerText = 'Game Over';
+    }
+}
+
 function draw() {
     if (gamePaused || gameOver) {
-        if (gameOver) {
-            fill(0);
-            textSize(32);
-            text('Game Over', width / 2 - 75, height / 2);
-            noLoop();
-        }
-        if (gamePaused) {
-            fill(0);
-            textSize(32);
-            text('Pause', width / 2 - 50, height / 2);
-        }
+        drawPause();
+        drawGameOver();
         return;
     }
     background(0);
-    translate(100, 0);
+    translate(50, 0);
     drawBoard();
+    drawGrid();
     currentPiece.show();
     currentPiece.update();
     drawNextPiece();
     drawHeldPiece();
+    drawScore();
+}
+
+function drawGrid() {
+    stroke(50);
+    for (let i = 0; i <= cols; i++) {
+        line(i * blockSize, 0, i * blockSize, rows * blockSize);
+    }
+    for (let i = 0; i <= rows; i++) {
+        line(0, i * blockSize, cols * blockSize, i * blockSize);
+    }
 }
 
 function holdPiece() {
@@ -148,56 +170,35 @@ function drawBoard() {
 
 function checkRowComplete() {
     for (let row = rows - 1; row >= 0; row--) {
-        let isRowFull = true;
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col] === 0) {
-                isRowFull = false;
-                break;
-            }
-        }
-        if (isRowFull) {
-            for (let row2 = row -1; row2 > 0; row2--) {
-                for (let col = 0; col < cols; col++) {
-                    board[row2][col] = board[row2 - 1][col];
-                }
-            }
-            for (let col = 0; col < cols; col++) {
-                board[0][col] = 0;
-            }
+        if (board[row].every(cell => cell !== 0)) {
+            board.splice(row, 1);
+            board.unshift(Array(cols).fill(0));
             score += 250;
             updateDifficultyBasedOnScore();
+            row++; // Recheck this row since rows have shifted down
         }
     }
 }
 
 function updateDifficultyBasedOnScore() {
-    if (score >= 500 && currentLoopSpeed > 25) {
-        currentLoopSpeed = 25;
-    } else if (score >= 1000 && currentLoopSpeed > 20) {
-        currentLoopSpeed = 20;
-    } else if (score >= 1500 && currentLoopSpeed > 15) {
-        currentLoopSpeed = 15;
-    } else if (score >= 2000 && currentLoopSpeed > 10) {
-        currentLoopSpeed = 10;
-    } else if (score >= 2500 && currentLoopSpeed > 5) {
+    if (score >= 2500) {
         currentLoopSpeed = 5;
+    } else if (score >= 2000) {
+        currentLoopSpeed = 10;
+    } else if (score >= 1500) {
+        currentLoopSpeed = 15;
+    } else if (score >= 1000) {
+        currentLoopSpeed = 20;
+    } else if (score >= 500) {
+        currentLoopSpeed = 25;
     }
     loopSpeed = currentLoopSpeed;
-}
-
-function setupSpeedQueue() {
-    speedQueue.enqueue(30);
-    speedQueue.enqueue(25);
-    speedQueue.enqueue(20);
-    speedQueue.enqueue(15);
-    speedQueue.enqueue(10);
-    speedQueue.enqueue(5);
 }
 
 function Piece() {
     this.shapes = [
         [[1, 1, 1, 1]], // I
-        [[1, 1], [1, 1]], // []
+        [[1, 1], [1, 1]], // O
         [[0, 1, 0], [1, 1, 1]], // T
         [[1, 0, 0], [1, 1, 1]], // J
         [[0, 0, 1], [1, 1, 1]], // L
@@ -297,11 +298,6 @@ function Piece() {
     };
 }
 
-function rotateColorQueue() {
-    const firstColor = colorQueue.shift();
-    colorQueue.push(firstColor);
-}
-
 document.addEventListener("DOMContentLoaded", function() {
     const tetrisGrid = document.querySelector('#tetris-grid');
     for (let i = 0; i < 200; i++) {
@@ -310,12 +306,5 @@ document.addEventListener("DOMContentLoaded", function() {
         tetrisGrid.appendChild(cell);
     }
 
-    const colorQueueDiv = document.querySelector('#color-queue');
-    colorQueue.forEach(color => {
-        const colorBox = document.createElement('div');
-        colorBox.classList.add('color-box');
-        colorBox.style.backgroundColor = color;
-        colorQueueDiv.appendChild(colorBox);
-    });
+    updateColorQueueDisplay();
 });
-
